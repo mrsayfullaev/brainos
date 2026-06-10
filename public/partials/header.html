@@ -1,0 +1,58 @@
+  <header class="header">
+    <div class="header-row">
+      <div class="logo-row">
+        <img src="/images/logo-brainos.svg" alt="BrainOS" width="auto" height="50" />
+      </div>
+      <div class="nav-wrap">
+        <nav class="nav">
+          <a href="{{HOME_HREF}}"{{HOME_ACTIVE}}>{{HOME_LABEL}}</a>
+          <a href="{{ABOUT_HREF}}"{{ABOUT_ACTIVE}}>{{ABOUT_LABEL}}</a>
+          <a href="{{OFFER_HREF}}"{{OFFER_ACTIVE}}>{{OFFER_LABEL}}</a>
+          <a href="{{PRIVACY_HREF}}"{{PRIVACY_ACTIVE}}>{{PRIVACY_LABEL}}</a>
+        </nav>
+        <div class="lang-dropdown" id="langDropdown" aria-label="Язык">
+          <button type="button" class="lang-trigger" aria-haspopup="true" aria-expanded="false"><span class="flag" id="langTriggerFlag">{{CURRENT_FLAG}}</span><span id="langTriggerLabel">{{CURRENT_LABEL}}</span></button>
+          <div class="lang-panel" id="langPanel"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      var base = (path === '/' || path === '') ? '' : path.replace(/^\//, '').replace(/^(en|ar|uz|es|tr)\/?/, '');
+      var currentLang = (path.match(/^\/(en|ar|uz|es|tr)(\/|$)/) || [])[1] || 'ru';
+      var langs = [
+        { code: 'ru', label: 'RU', flag: '🇷🇺' },
+        { code: 'uz', label: 'UZ', flag: '🇺🇿' },
+        { code: 'tr', label: 'TR', flag: '🇹🇷' },
+        { code: 'es', label: 'ES', flag: '🇪🇸' },
+        { code: 'ar', label: 'AR', flag: '🇸🇦' },
+        { code: 'en', label: 'EN', flag: '🇬🇧' }
+      ];
+      var trigger = document.getElementById('langDropdown');
+      var triggerFlag = document.getElementById('langTriggerFlag');
+      var triggerLabel = document.getElementById('langTriggerLabel');
+      var panel = document.getElementById('langPanel');
+      if (!trigger || !panel) return;
+      var cur = langs.find(function(l) { return l.code === currentLang; }) || langs[0];
+      triggerFlag.textContent = cur.flag;
+      triggerLabel.textContent = cur.label;
+      langs.forEach(function(l) {
+        var a = document.createElement('a');
+        a.href = l.code === 'ru' ? (base ? '/' + base : '/') : '/' + l.code + (base ? '/' + base : '');
+        a.setAttribute('hreflang', l.code);
+        a.innerHTML = '<span class="flag">' + l.flag + '</span>' + l.label;
+        panel.appendChild(a);
+      });
+      trigger.querySelector('.lang-trigger').addEventListener('click', function(e) {
+        e.stopPropagation();
+        trigger.classList.toggle('open');
+        trigger.querySelector('.lang-trigger').setAttribute('aria-expanded', trigger.classList.contains('open'));
+      });
+      document.addEventListener('click', function() {
+        trigger.classList.remove('open');
+        trigger.querySelector('.lang-trigger').setAttribute('aria-expanded', 'false');
+      });
+    })();
+  </script>

@@ -1,0 +1,1381 @@
+// Prisma schema for BrainOS Multi-AI Telegram Bot
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  telegramId   BigInt   @unique
+  username     String?  // Telegram @username for V3 Projects collaboration
+  name         String?
+  language     String   @default("ru") // "ru" | "en" | "es" | "ar" | "uz" | "tr"
+  consentGivenAt DateTime? // null = не дал согласие; до согласия нельзя пользоваться
+  
+  // Настройки формата общения
+  tone         String?  // "formal" | "friendly" | "neutral"
+  length       String?  // "brief" | "medium" | "detailed"
+  emoji        String?  // "yes" | "no" | "moderate"
+  structure    String?  // "lists" | "paragraphs" | "mixed"
+  style        String?  // "expert" | "friend" | "teacher"
+  detail       String?  // "answer_only" | "with_context" | "maximum"
+  
+  customPrompt String?  @db.Text // Свободный промт от пользователя
+  
+  // Часовой пояс пользователя (UTC+3, UTC-5 и т.д.) — для дайджестов, DND, напоминаний
+  timezone     String?  // "UTC+3" | "UTC+5" | "UTC-5" | ...
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  responses    AIResponse[]
+  transactions Transaction[]
+  budgets      Budget[]
+  tasks        Task[]
+  reminders    Reminder[]
+  notes        Note[]
+  sleepRecords Sleep[]
+  waterIntakes WaterIntake[]
+  waterGoal    WaterGoal?
+  ideas        Idea[]
+  quotes       Quote[]
+  healthEntries HealthEntry[]
+  workouts     Workout[]
+  meals        Meal[]
+  vocabEntries VocabEntry[]
+  books        Book[]
+  subscriptions Subscription[]
+  savingsGoals SavingsGoal[]
+  debts        Debt[]
+  contacts     Contact[]
+  newsItems    NewsItem[]
+  trips        Trip[]
+  places       Place[]
+  buyItems     BuyItem[]
+  // V3 modules
+  knowledgePages KnowledgePage[]
+  habits        Habit[]
+  investments   Investment[]
+  courses       Course[]
+  emailDrafts   EmailDraft[]
+  readLater     ReadLater[]
+  projects      Project[]
+  projectMembers ProjectMember[]
+  cars          Car[]
+  pets          Pet[]
+  // V4
+  planSubscription   PlanSubscription?
+  meetings           Meeting[]
+  notificationSettings NotificationSettings?
+  pendingNotifications PendingNotification[]
+  workflows            Workflow[]
+  researchReports      ResearchReport[]
+  workspaceMembers     WorkspaceMember[]
+  notionConnection     NotionConnection?
+  notionLinkedDbs      NotionLinkedDatabase[]
+  emailAccounts        EmailAccount[]
+  calendarConnection   GoogleCalendarConnection?
+  
+  @@index([telegramId])
+  @@map("users")
+}
+
+model AIResponse {
+  id             String   @id @default(cuid())
+  userId         String
+  userMessage    String   @db.Text
+  
+  // Победитель (первый ответ)
+  winnerModel    String   // "gpt-4" | "gemini-pro" | "gigachat" | "claude-sonnet"
+  winnerResponse String   @db.Text
+  winnerTime     Int      // Время ответа в миллисекундах
+  
+  // Все ответы (JSON для аналитики)
+  allResponses   Json     // [{ model: string, response: string, time: number }, ...]
+  
+  // V2: Используемый модуль (если есть)
+  moduleUsed     String?  // "wallet" | "task" | "remind" | etc.
+  
+  createdAt      DateTime @default(now())
+  
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([winnerModel])
+  @@index([moduleUsed])
+  @@map("ai_responses")
+}
+
+// ==================== WALLET MODULE ====================
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  type        TxType
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("RUB")
+  description String?  @db.Text  // ENCRYPTED
+  category    String?              // ENCRYPTED
+  tags        String[] @default([])
+  date        DateTime @default(now())
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([userId, category])
+  @@map("transactions")
+}
+
+model Budget {
+  id          String   @id @default(cuid())
+  userId      String
+  category    String   // ENCRYPTED
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("RUB")
+  period      Period   @default(MONTHLY)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, category, period])
+  @@index([userId])
+  @@map("budgets")
+}
+
+enum TxType {
+  INCOME
+  EXPENSE
+}
+
+enum Period {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// ==================== TASK MODULE ====================
+
+model Task {
+  id          String       @id @default(cuid())
+  userId      String
+  title       String       @db.Text  // ENCRYPTED
+  description String?      @db.Text  // ENCRYPTED
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(TODO)
+  dueDate     DateTime?
+  completedAt DateTime?
+  parentId    String?                // Для подзадач
+  tags        String[]     @default([])
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent      Task?        @relation("Subtasks", fields: [parentId], references: [id])
+  subtasks    Task[]       @relation("Subtasks")
+  workspaceId String?     // V4: null = личная, иначе общая в воркспейсе
+  workspace   Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@index([userId, priority])
+  @@index([workspaceId])
+  @@map("tasks")
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+// ==================== REMINDER MODULE ====================
+
+model Reminder {
+  id             String         @id @default(cuid())
+  userId         String
+  text           String         @db.Text  // ENCRYPTED
+  triggerAt      DateTime
+  recurrence     RecurrenceType @default(ONCE)
+  recurrenceRule String?                  // Cron-like rule for CUSTOM
+  completed      Boolean        @default(false)
+  notified       Boolean        @default(false)
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, triggerAt])
+  @@index([triggerAt, completed, notified])
+  @@map("reminders")
+}
+
+enum RecurrenceType {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+// ==================== NOTE MODULE ====================
+
+model Note {
+  id          String   @id @default(cuid())
+  userId      String
+  content     String   @db.Text  // ENCRYPTED
+  tags        String[] @default([])
+  voiceFileId String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?  // V4: null = личная, иначе общая в воркспейсе (база знаний)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([tags])
+  @@index([workspaceId])
+  @@map("notes")
+}
+
+// ==================== SLEEP MODULE ====================
+
+model Sleep {
+  id        String   @id @default(cuid())
+  userId    String
+  bedtime   DateTime
+  wakeup    DateTime
+  duration  Int      // minutes
+  quality   Int?     // 1-10
+  notes     String?  @db.Text  // ENCRYPTED
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, bedtime])
+  @@map("sleep")
+}
+
+// ==================== WATER MODULE ====================
+
+model WaterIntake {
+  id     String   @id @default(cuid())
+  userId String
+  amount Int      // milliliters
+  date   DateTime @default(now())
+  
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, date])
+  @@map("water_intake")
+}
+
+model WaterGoal {
+  id        String @id @default(cuid())
+  userId    String @unique
+  dailyGoal Int    // milliliters
+  
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("water_goals")
+}
+
+// ==================== IDEA MODULE ====================
+
+model Idea {
+  id       String   @id @default(cuid())
+  userId   String
+  content  String   @db.Text  // ENCRYPTED
+  category String?
+  tags     String[] @default([])
+  archived Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("ideas")
+}
+
+// ==================== QUOTE MODULE ====================
+
+model Quote {
+  id     String   @id @default(cuid())
+  userId String
+  text   String   @db.Text  // ENCRYPTED
+  author String?  @db.Text  // ENCRYPTED
+  source String?  @db.Text  // ENCRYPTED
+  tags   String[] @default([])
+  
+  createdAt DateTime @default(now())
+  
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("quotes")
+}
+
+// ==================== HEALTH MODULE ====================
+
+model HealthEntry {
+  id          String     @id @default(cuid())
+  userId      String
+  type        HealthType
+  description String     @db.Text  // ENCRYPTED
+  metadata    Json       @default("{}")
+  date        DateTime   @default(now())
+  
+  createdAt   DateTime   @default(now())
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, date])
+  @@map("health_entries")
+}
+
+enum HealthType {
+  SYMPTOM
+  MEDICATION
+  LAB_TEST
+  DOCTOR_VISIT
+}
+
+// ==================== WORKOUT MODULE ====================
+
+model Workout {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  exercises Json     @default("[]")
+  duration  Int?     // minutes
+  notes     String?  @db.Text  // ENCRYPTED
+  date      DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, date])
+  @@map("workouts")
+}
+
+// ==================== FOOD MODULE ====================
+
+model Meal {
+  id          String   @id @default(cuid())
+  userId      String
+  mealType    MealType
+  description String   @db.Text  // ENCRYPTED
+  calories    Int?
+  date        DateTime @default(now())
+  
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, date])
+  @@map("meals")
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+// ==================== VOCAB MODULE ====================
+
+model VocabEntry {
+  id           String    @id @default(cuid())
+  userId       String
+  word         String    @db.Text  // ENCRYPTED
+  translation  String    @db.Text  // ENCRYPTED
+  language     String
+  context      String?   @db.Text  // ENCRYPTED
+  reviewCount  Int       @default(0)
+  lastReviewed DateTime?
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, language])
+  @@map("vocab_entries")
+}
+
+// ==================== BOOK MODULE ====================
+
+model Book {
+  id          String     @id @default(cuid())
+  userId      String
+  title       String     @db.Text  // ENCRYPTED
+  author      String?    @db.Text  // ENCRYPTED
+  status      BookStatus @default(TO_READ)
+  pages       Int?
+  currentPage Int        @default(0)
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, status])
+  @@map("books")
+}
+
+enum BookStatus {
+  TO_READ
+  READING
+  COMPLETED
+}
+
+// ==================== SUBSCRIPTION MODULE ====================
+
+model Subscription {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   @db.Text  // ENCRYPTED
+  cost        Float
+  period      SubscriptionPeriod
+  nextPayment DateTime
+  active      Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, nextPayment])
+  @@map("subscriptions")
+}
+
+enum SubscriptionPeriod {
+  MONTHLY
+  YEARLY
+}
+
+// ==================== SAVINGS MODULE ====================
+
+model SavingsGoal {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String    @db.Text  // ENCRYPTED
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+  achieved      Boolean   @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, achieved])
+  @@map("savings_goals")
+}
+
+// ==================== DEBT MODULE ====================
+
+model Debt {
+  id        String    @id @default(cuid())
+  userId    String
+  creditor  String    @db.Text  // ENCRYPTED
+  amount    Float
+  deadline  DateTime?
+  paid      Boolean   @default(false)
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, paid])
+  @@map("debts")
+}
+
+// ==================== CONTACT MODULE ====================
+
+model Contact {
+  id     String   @id @default(cuid())
+  userId String
+  name   String   @db.Text  // ENCRYPTED
+  phone  String?  @db.Text  // ENCRYPTED
+  email  String?  @db.Text  // ENCRYPTED
+  notes  String?  @db.Text  // ENCRYPTED
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("contacts")
+}
+
+// ==================== NEWS MODULE ====================
+
+model NewsItem {
+  id      String   @id @default(cuid())
+  userId  String
+  title   String   @db.Text  // ENCRYPTED
+  url     String?
+  source  String?
+  tags    String[] @default([])
+  read    Boolean  @default(false)
+  savedAt DateTime @default(now())
+  
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, savedAt])
+  @@map("news_items")
+}
+
+// ==================== TRIP MODULE ====================
+
+model Trip {
+  id          String    @id @default(cuid())
+  userId      String
+  destination String    @db.Text  // ENCRYPTED
+  startDate   DateTime
+  endDate     DateTime?
+  notes       String?   @db.Text  // ENCRYPTED
+  completed   Boolean   @default(false)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, startDate])
+  @@map("trips")
+}
+
+// ==================== PLACE MODULE ====================
+
+model Place {
+  id       String   @id @default(cuid())
+  userId   String
+  name     String   @db.Text  // ENCRYPTED
+  address  String?  @db.Text  // ENCRYPTED
+  category String?
+  rating   Int?
+  notes    String?  @db.Text  // ENCRYPTED
+  visited  Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("places")
+}
+
+// ==================== BUY MODULE (Shopping List) ====================
+
+model BuyItem {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @db.Text  // ENCRYPTED
+  quantity  Int      @default(1)
+  priority  Int      @default(3)
+  purchased Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, purchased])
+  @@map("buy_items")
+}
+
+// ==================== V3: KNOWLEDGE BASE MODULE ====================
+
+model KnowledgePage {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String                        // ENCRYPTED
+  content   String   @db.Text            // ENCRYPTED - markdown
+  embedding Json?  // float[] for semantic search (1536 dims, or use pgvector later)
+  tags      String[] @default([])
+  fileId    String?  // Telegram file_id if uploaded
+  fileType  String?  // "pdf", "docx", "txt"
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linksTo   WikiLink[] @relation("SourcePage")
+  linksFrom WikiLink[] @relation("TargetPage")
+  
+  @@index([userId])
+  @@map("knowledge_pages")
+}
+
+model WikiLink {
+  id       String @id @default(cuid())
+  sourceId String
+  targetId String
+  
+  sourcePage KnowledgePage @relation("SourcePage", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetPage KnowledgePage @relation("TargetPage", fields: [targetId], references: [id], onDelete: Cascade)
+  
+  @@unique([sourceId, targetId])
+  @@map("wiki_links")
+}
+
+// ==================== V3: HABITS MODULE ====================
+
+model Habit {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String                       // ENCRYPTED
+  frequency  HabitFrequency @default(DAILY)
+  targetDays Int[]     @default([])       // For weekly: [1,3,5] = Mon, Wed, Fri
+  active     Boolean   @default(true)
+  
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completions HabitCompletion[]
+  
+  @@index([userId, active])
+  @@map("habits")
+}
+
+model HabitCompletion {
+  id     String    @id @default(cuid())
+  habitId String
+  date   DateTime  @db.Date
+  note   String?   @db.Text  // ENCRYPTED
+  
+  habit  Habit     @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  
+  @@unique([habitId, date])
+  @@index([habitId, date])
+  @@map("habit_completions")
+}
+
+enum HabitFrequency {
+  DAILY
+  WEEKLY
+  CUSTOM
+}
+
+// ==================== V3: INVESTMENTS MODULE ====================
+
+model Investment {
+  id        String     @id @default(cuid())
+  userId    String
+  type      InvestType
+  ticker    String
+  quantity  Decimal    @db.Decimal(18, 8)
+  avgPrice  Decimal    @db.Decimal(18, 2)
+  currency  String     @default("USD")
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions InvestmentTransaction[]
+  
+  @@unique([userId, ticker])
+  @@index([userId])
+  @@map("investments")
+}
+
+model InvestmentTransaction {
+  id           String   @id @default(cuid())
+  investmentId String
+  type         InvestTxType
+  quantity     Decimal  @db.Decimal(18, 8)
+  price        Decimal  @db.Decimal(18, 2)
+  total        Decimal  @db.Decimal(18, 2)
+  fee          Decimal? @db.Decimal(10, 2)
+  note         String?  @db.Text  // ENCRYPTED
+  date         DateTime @default(now())
+  
+  investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  
+  @@index([investmentId, date])
+  @@map("investment_transactions")
+}
+
+enum InvestType {
+  STOCK
+  CRYPTO
+  ETF
+  BOND
+}
+
+enum InvestTxType {
+  BUY
+  SELL
+}
+
+// ==================== V3: COURSES MODULE ====================
+
+model Course {
+  id            String       @id @default(cuid())
+  userId        String
+  title         String                       // ENCRYPTED
+  platform      String?                      // ENCRYPTED
+  instructor    String?                      // ENCRYPTED
+  totalLessons  Int?
+  currentLesson Int          @default(0)
+  status        CourseStatus  @default(IN_PROGRESS)
+  url           String?       @db.Text       // ENCRYPTED
+  notes         String?       @db.Text      // ENCRYPTED
+  startedAt     DateTime?
+  completedAt   DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, status])
+  @@map("courses")
+}
+
+enum CourseStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+}
+
+// ==================== V3: EMAIL MODULE ====================
+
+model EmailDraft {
+  id        String        @id @default(cuid())
+  userId    String
+  subject   String                       // ENCRYPTED
+  body      String        @db.Text      // ENCRYPTED
+  recipient String?                     // ENCRYPTED
+  template  EmailTemplate?
+  tone      EmailTone     @default(FORMAL)
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("email_drafts")
+}
+
+enum EmailTemplate {
+  RESIGNATION
+  COMPLAINT
+  INVITATION
+  THANK_YOU
+  APOLOGY
+  FOLLOW_UP
+  INTRODUCTION
+  CUSTOM
+}
+
+enum EmailTone {
+  FORMAL
+  CASUAL
+  FRIENDLY
+  ASSERTIVE
+}
+
+// ==================== V4: EMAIL AGENT (Gmail) ====================
+
+model EmailAccount {
+  id           String    @id @default(cuid())
+  userId       String
+  accessToken  String    @db.Text  // ENCRYPTED
+  refreshToken String    @db.Text  // ENCRYPTED
+  email        String?   // адрес почты (для отображения)
+  lastSyncAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  threads      EmailThread[]
+  @@unique([userId])
+  @@index([userId])
+  @@map("email_accounts")
+}
+
+model EmailThread {
+  id            String      @id @default(cuid())
+  emailAccountId String
+  externalId    String      // Gmail thread id
+  subject       String      @db.Text  // ENCRYPTED
+  snippet       String?     @db.Text  // ENCRYPTED
+  fromAddress   String?     @db.Text  // ENCRYPTED
+  triage        EmailTriage @default(PENDING)
+  receivedAt    DateTime?
+  createdAt     DateTime    @default(now())
+  emailAccount  EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+  @@unique([emailAccountId, externalId])
+  @@index([emailAccountId, triage])
+  @@map("email_threads")
+}
+
+enum EmailTriage {
+  PENDING
+  URGENT
+  IMPORTANT
+  NORMAL
+  SPAM
+}
+
+// ==================== V3: READ LATER MODULE ====================
+
+model ReadLater {
+  id          String       @id @default(cuid())
+  userId      String
+  url         String       @db.Text      // ENCRYPTED
+  title       String?                    // ENCRYPTED
+  description String?     @db.Text      // ENCRYPTED
+  imageUrl    String?     @db.Text      // ENCRYPTED
+  tags        String[]     @default([])
+  type        ContentType  @default(ARTICLE)
+  read        Boolean      @default(false)
+  archived    Boolean      @default(false)
+  
+  createdAt   DateTime  @default(now())
+  readAt      DateTime?
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, read])
+  @@index([userId, archived])
+  @@map("read_later")
+}
+
+enum ContentType {
+  ARTICLE
+  VIDEO
+  PODCAST
+  OTHER
+}
+
+// ==================== V3: PROJECTS MODULE ====================
+
+model Project {
+  id          String        @id @default(cuid())
+  userId      String
+  name        String                       // ENCRYPTED
+  description String?       @db.Text      // ENCRYPTED
+  status      ProjectStatus @default(ACTIVE)
+  deadline    DateTime?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones  Milestone[]
+  files       ProjectFile[]
+  members     ProjectMember[]
+  
+  @@index([userId, status])
+  @@map("projects")
+}
+
+model Milestone {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String                       // ENCRYPTED
+  description String?  @db.Text           // ENCRYPTED
+  deadline    DateTime?
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  
+  createdAt   DateTime  @default(now())
+  
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
+  @@map("milestones")
+}
+
+model ProjectFile {
+  id         String   @id @default(cuid())
+  projectId  String
+  fileId     String
+  fileName   String                       // ENCRYPTED
+  fileType   String
+  uploadedBy String
+  
+  createdAt  DateTime  @default(now())
+  
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
+  @@map("project_files")
+}
+
+model ProjectMember {
+  id        String     @id @default(cuid())
+  projectId String
+  userId    String
+  role      MemberRole @default(MEMBER)
+  joinedAt  DateTime   @default(now())
+  
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  member    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// ==================== V3: CAR MODULE ====================
+
+model Car {
+  id            String   @id @default(cuid())
+  userId        String
+  make          String                     // ENCRYPTED
+  model         String                     // ENCRYPTED
+  year          Int
+  licensePlate  String?                    // ENCRYPTED
+  vin           String?                    // ENCRYPTED
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services      CarService[]
+  fuelLogs      FuelLog[]
+  fines         TrafficFine[]
+  
+  @@index([userId])
+  @@map("cars")
+}
+
+model CarService {
+  id          String       @id @default(cuid())
+  carId       String
+  type        ServiceType
+  description String?      @db.Text  // ENCRYPTED
+  mileage     Int?
+  cost        Decimal?     @db.Decimal(10, 2)
+  nextDue     DateTime?
+  
+  date        DateTime  @default(now())
+  
+  car         Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  
+  @@index([carId, date])
+  @@map("car_services")
+}
+
+model FuelLog {
+  id       String   @id @default(cuid())
+  carId    String
+  liters   Decimal  @db.Decimal(6, 2)
+  cost     Decimal  @db.Decimal(10, 2)
+  mileage  Int?
+  fullTank Boolean  @default(true)
+  
+  date     DateTime  @default(now())
+  
+  car      Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  
+  @@index([carId, date])
+  @@map("fuel_logs")
+}
+
+model TrafficFine {
+  id      String    @id @default(cuid())
+  carId   String
+  amount  Decimal   @db.Decimal(10, 2)
+  reason  String                     // ENCRYPTED
+  paid    Boolean   @default(false)
+  dueDate DateTime?
+  
+  date    DateTime  @default(now())
+  paidAt  DateTime?
+  
+  car     Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  
+  @@index([carId, paid])
+  @@map("traffic_fines")
+}
+
+enum ServiceType {
+  OIL_CHANGE
+  TIRE_ROTATION
+  INSPECTION
+  REPAIR
+  OTHER
+}
+
+// ==================== V3: PETS MODULE ====================
+
+model Pet {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String                     // ENCRYPTED
+  species   String                     // ENCRYPTED
+  breed     String?                    // ENCRYPTED
+  birthDate DateTime?
+  gender    PetGender?
+  weight    Decimal? @db.Decimal(5, 2)
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vaccinations Vaccination[]
+  vetVisits VetVisit[]
+  feedings  Feeding[]
+  
+  @@index([userId])
+  @@map("pets")
+}
+
+model Vaccination {
+  id           String    @id @default(cuid())
+  petId        String
+  name         String                     // ENCRYPTED
+  date         DateTime
+  nextDue      DateTime?
+  veterinarian String?                    // ENCRYPTED
+  
+  createdAt    DateTime  @default(now())
+  
+  pet          Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
+  
+  @@index([petId, nextDue])
+  @@map("vaccinations")
+}
+
+model VetVisit {
+  id        String    @id @default(cuid())
+  petId     String
+  reason    String                     // ENCRYPTED
+  diagnosis String?   @db.Text         // ENCRYPTED
+  treatment String?   @db.Text         // ENCRYPTED
+  cost      Decimal?  @db.Decimal(10, 2)
+  nextVisit DateTime?
+  
+  date      DateTime  @default(now())
+  
+  pet       Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
+  
+  @@index([petId, date])
+  @@map("vet_visits")
+}
+
+model Feeding {
+  id      String   @id @default(cuid())
+  petId   String
+  foodType String                     // ENCRYPTED
+  amount  Decimal  @db.Decimal(6, 2)
+  time    DateTime @default(now())
+  
+  pet     Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  
+  @@index([petId, time])
+  @@map("feedings")
+}
+
+enum PetGender {
+  MALE
+  FEMALE
+}
+
+// ==================== V4: BILLING (Premium) ====================
+
+model PlanSubscription {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  tier        SubTier   @default(FREE)
+  status      SubStatus @default(ACTIVE)
+  bonusModule String?   // Выбранный бонусный модуль для Free
+  teamSize    Int       @default(1)
+  stripeCustomerId    String?   @unique
+  stripeSubscriptionId String?  @unique
+  currentPeriodStart  DateTime?
+  currentPeriodEnd    DateTime?
+  cancelAtPeriodEnd   Boolean   @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@map("plan_subscriptions")
+}
+
+enum SubTier {
+  FREE
+  PRO
+  TEAM
+}
+
+enum SubStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+}
+
+// ==================== V4: MEETING AGENT ====================
+
+model GoogleCalendarConnection {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String   @db.Text  // ENCRYPTED
+  refreshToken String   @db.Text  // ENCRYPTED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("google_calendar_connections")
+}
+
+model Meeting {
+  id           String        @id @default(cuid())
+  userId       String
+  calendarId   String?       // Внешний ID события календаря
+  title        String?       @db.Text  // ENCRYPTED
+  participants String[]      @default([]) // ENCRYPTED
+  scheduledAt  DateTime
+  duration     Int           // минуты
+  location     String?       @db.Text  // ENCRYPTED
+  agenda       String?       @db.Text  // ENCRYPTED
+  transcript   String?       @db.Text  // ENCRYPTED
+  summary      String?       @db.Text  // ENCRYPTED
+  actionItems  Json?         // ENCRYPTED
+  status       MeetingStatus @default(SCHEDULED)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, scheduledAt])
+  @@index([userId, status])
+  @@map("meetings")
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ==================== V4: SMART NOTIFICATIONS ====================
+
+model NotificationSettings {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  digestEnabled Boolean  @default(true)
+  digestTime    String   @default("20:00")  // HH:MM
+  dndEnabled    Boolean  @default(false)
+  dndStart      String?  // HH:MM
+  dndEnd        String?  // HH:MM
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("notification_settings")
+}
+
+model PendingNotification {
+  id        String        @id @default(cuid())
+  userId    String
+  message   String        @db.Text  // ENCRYPTED
+  priority  NotifPriority @default(NORMAL)
+  source    String
+  sent      Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  sentAt    DateTime?
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, sent, priority])
+  @@map("pending_notifications")
+}
+
+enum NotifPriority {
+  URGENT   // Сразу
+  NORMAL   // В дайджест
+  LOW      // Только в еженедельной сводке
+}
+
+// ==================== V4: WORKFLOW AUTOMATION ====================
+
+model Workflow {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   @db.Text  // ENCRYPTED
+  description String?  @db.Text  // ENCRYPTED
+  enabled     Boolean  @default(true)
+  trigger     Json     // { type: "module_event", module: "note", event: "created" }
+  conditions  Json?    // [{ field: "tags", operator: "contains", value: "important" }]
+  actions     Json     // [{ type: "ai_process", prompt: "..." }, { type: "save_to", module: "kb" }]
+  runCount    Int      @default(0)
+  lastRun     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs        WorkflowRun[]
+  @@index([userId, enabled])
+  @@map("workflows")
+}
+
+model WorkflowRun {
+  id          String    @id @default(cuid())
+  workflowId  String
+  input       Json      // ENCRYPTED trigger data
+  output      Json?     // ENCRYPTED
+  steps       Json      // ENCRYPTED execution log
+  status      RunStatus @default(SUCCESS)
+  error       String?   @db.Text  // ENCRYPTED
+  createdAt   DateTime  @default(now())
+  workflow    Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  @@index([workflowId, createdAt])
+  @@map("workflow_runs")
+}
+
+enum RunStatus {
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+// ==================== V4: RESEARCH AGENT ====================
+
+model ResearchReport {
+  id           String       @id @default(cuid())
+  userId       String
+  query        String       @db.Text  // ENCRYPTED
+  subQueries   String[]     @default([])  // ENCRYPTED
+  findings     Json?        // ENCRYPTED
+  report       String?      @db.Text  // ENCRYPTED
+  sources      Json?        // URLs and citations
+  status       ReportStatus  @default(IN_PROGRESS)
+  createdAt    DateTime     @default(now())
+  completedAt DateTime?
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, status])
+  @@map("research_reports")
+}
+
+enum ReportStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+// ==================== V4: TEAM WORKSPACES ====================
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String   @db.Text  // ENCRYPTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   WorkspaceMember[]
+  tasks     Task[]
+  notes     Note[]
+  @@index([id])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(MEMBER)
+  createdAt   DateTime      @default(now())
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("workspace_members")
+}
+
+enum WorkspaceRole {
+  ADMIN   // управление участниками и настройками
+  MEMBER  // создание/редактирование задач и заметок
+  VIEWER  // только просмотр
+}
+
+// ==================== V4: NOTION INTEGRATION ====================
+
+model NotionConnection {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  accessToken  String    @db.Text  // ENCRYPTED
+  workspaceId  String?   // Notion workspace id
+  lastSyncAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@map("notion_connections")
+}
+
+// Пользователи, отказавшиеся от согласия — блокируем, не создаём User
+model BlockedTelegramUser {
+  id         String   @id @default(cuid())
+  telegramId BigInt   @unique
+  createdAt  DateTime @default(now())
+  @@index([telegramId])
+  @@map("blocked_telegram_users")
+}
+
+enum NotionLinkedDbType {
+  TASKS
+  NOTES
+}
+
+model NotionLinkedDatabase {
+  id         String            @id @default(cuid())
+  userId     String
+  type       NotionLinkedDbType // TASKS | NOTES
+  databaseId String            // ID базы в Notion
+  label      String?           // описание (например "Рабочие задачи")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, databaseId])
+  @@index([userId, type])
+  @@map("notion_linked_databases")
+}

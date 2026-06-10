@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Инструкция по BrainOS Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+<!-- HEADER -->
+  <main class="container">
+    <div class="doc content-narrow doc-page">
+      <h1 style="color:var(--navy);margin:1.5rem 0 0.5rem;">Инструкция по BrainOS Bot</h1>
+      <p class="doc-meta">Пишите в свободной форме — бот поймёт намерение и направит в нужный модуль.</p>
+      <nav class="toc" aria-label="Содержание">
+        <strong>Содержание:</strong>
+        <a href="#free">Бесплатные (Free)</a> ·
+        <a href="#bonus">Бонусный модуль</a> ·
+        <a href="#premium">Премиум (Pro/Team)</a> ·
+        <a href="#integrations">Интеграции и сервисы</a>
+      </nav>
+
+      <!-- ========== FREE ========== -->
+      <h2 id="free">Бесплатные модули (Free)</h2>
+      <p>На тарифе Free доступны <strong>5 базовых модулей</strong> без ограничения по использованию. Лимит: 100 AI-запросов в месяц. Остаток смотрите в <code>/settings</code>.</p>
+
+      <section class="module-block">
+        <h3>✅ Task — Задачи</h3>
+        <p><strong>Что делает:</strong> Задачи с приоритетом, сроками и подзадачами.</p>
+        <p><strong>Как вызвать:</strong> напишите <code>задача</code>, <code>task</code> или фразу вроде «купить молоко».</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Создать</td><td><code>новая задача купить молоко</code>, <code>задача со сроком до завтра</code></td></tr>
+          <tr><td>Статус</td><td><code>задача готова</code>, <code>выполнено</code>, <code>отмени задачу</code></td></tr>
+          <tr><td>Список</td><td><code>покажи задачи</code>, <code>мои задачи</code>, <code>задачи на сегодня</code></td></tr>
+        </table>
+        <p><strong>Приоритеты:</strong> высокий / средний / низкий. <strong>Статусы:</strong> сделать, в работе, готово, отменено.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>📝 Note — Заметки</h3>
+        <p><strong>Что делает:</strong> Быстрые заметки с тегами.</p>
+        <p><strong>Как вызвать:</strong> <code>заметка</code>, <code>note</code> или текст с тегом <code>#слово</code>.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сохранить</td><td><code>заметка: идея для проекта</code>, <code>сохрани это #важное</code></td></tr>
+          <tr><td>Теги</td><td><code>#работа #срочно</code>, <code>#идеи</code> (теги через <code>#слово</code>)</td></tr>
+        </table>
+        <p>Поиск по тегам и тексту — в разработке.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>Wallet — Кошелёк (финансы)</h3>
+        <p><strong>Что делает:</strong> Учёт доходов и расходов, бюджеты, аналитика.</p>
+        <p><strong>Как вызвать:</strong> <code>wallet</code>, <code>кошелёк</code> или фразы про деньги.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Расход</td><td><code>потратил 500 на еду</code>, <code>кофе 290</code>, <code>такси 450</code></td></tr>
+          <tr><td>Доход</td><td><code>+80000 зарплата</code>, <code>получил 5000</code></td></tr>
+          <tr><td>Бюджет</td><td><code>бюджет еда 15000</code>, <code>бюджет транспорт 5000</code></td></tr>
+          <tr><td>Статистика</td><td><code>покажи расходы</code>, <code>расходы за месяц</code>, <code>статистика</code></td></tr>
+        </table>
+        <p><strong>Авто:</strong> еженедельный дайджест (воскр. 20:00), предупреждения о бюджете (ежедн. 18:00), прогноз на месяц (25-го в 10:00). Время — по вашему часовому поясу из настроек.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>🏥 Health — Здоровье</h3>
+        <p><strong>Что делает:</strong> Записи о симптомах, лекарствах, анализах, визитах к врачу.</p>
+        <p><strong>Как вызвать:</strong> <code>health</code>, <code>здоровье</code>, <code>симптом</code>, <code>лекарство</code> и т.п.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Симптом</td><td><code>симптом: головная боль</code>, <code>болит голова</code></td></tr>
+          <tr><td>Лекарство</td><td><code>лекарство аспирин</code>, <code>принял ибупрофен</code></td></tr>
+          <tr><td>Анализ</td><td><code>анализ крови</code>, <code>результаты анализов</code></td></tr>
+          <tr><td>Врач</td><td><code>был у врача</code>, <code>визит к терапевту</code></td></tr>
+        </table>
+        <p><em>Бот не даёт медицинских советов, только сохраняет записи.</em></p>
+      </section>
+
+      <section class="module-block">
+        <h3>👤 Contact — Контакты</h3>
+        <p><strong>Что делает:</strong> Простая книга контактов.</p>
+        <p><strong>Как вызвать:</strong> <code>contact</code>, <code>контакт</code> или имя + телефон/email.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сохранить</td><td><code>контакт Анна +79991234567</code>, <code>Иван anna@mail.ru</code></td></tr>
+        </table>
+      </section>
+
+      <!-- ========== BONUS ========== -->
+      <h2 id="bonus">Бонусный модуль (один на выбор)</h2>
+      <p>При регистрации можно выбрать <strong>один дополнительный модуль</strong> из списка ниже. Выбор делается один раз при онбординге и в настройках не меняется.</p>
+
+      <section class="module-block module-bonus">
+        <h3>⏰ Remind — Напоминания</h3>
+        <p><strong>Что делает:</strong> Напоминания разовые и повторяющиеся (раз, день, неделя, месяц, год). Время срабатывания — по вашему часовому поясу.</p>
+        <p><strong>Команда/фраза:</strong> <code>напомни</code>, <code>remind</code>.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Разовое</td><td><code>напомни через 2 часа позвонить маме</code></td></tr>
+          <tr><td>По времени</td><td><code>напомни завтра в 10:00 встреча</code></td></tr>
+          <tr><td>Повтор</td><td><code>каждый понедельник в 9:00 зарядка</code>, <code>каждый день в 8:00 будильник</code></td></tr>
+          <tr><td>Список</td><td><code>мои напоминания</code>, <code>напоминания на сегодня</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block module-bonus">
+        <h3>📚 KB — База знаний</h3>
+        <p><strong>Что делает:</strong> Личная вики с семантическим поиском и ответами на вопросы по сохранённым материалам. Вики-ссылки <code>[[Название страницы]]</code> сохраняются для графа связей. Эмбеддинги — через OpenAI.</p>
+        <p><strong>Команда/фраза:</strong> первая строка сообщения — заголовок страницы, дальше — текст.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Создать страницу</td><td>Первая строка — заголовок, дальше текст. <code>OAuth 2.0</code> + текст про OAuth...</td></tr>
+          <tr><td>Поиск</td><td><code>найди про Nginx</code>, <code>поиск OAuth</code>, <code>найди в базе docker</code></td></tr>
+          <tr><td>Вопрос по базе</td><td><code>что такое OAuth?</code>, <code>как настроить Nginx?</code></td></tr>
+          <tr><td>Граф связей</td><td><code>граф</code>, <code>связи</code>, <code>graph</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block module-bonus">
+        <h3>🔁 Habits — Привычки</h3>
+        <p><strong>Что делает:</strong> Трекер привычек со стриками и календарём.</p>
+        <p><strong>Команда/фраза:</strong> <code>привычка</code>, <code>habit</code>.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Создать</td><td><code>привычка читать 20 минут</code>, <code>каждый день зарядка</code></td></tr>
+          <tr><td>Отметить</td><td><code>выполнил зарядка</code>, <code>сделал читать</code>, <code>done медитация</code></td></tr>
+          <tr><td>Список</td><td><code>список привычек</code>, <code>мои привычки</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block module-bonus">
+        <h3>📈 Investments — Инвестиции</h3>
+        <p><strong>Что делает:</strong> Портфель акций/крипты и курсы. Цены акций — Alpha Vantage, крипта — CoinGecko (без ключа).</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Купить</td><td><code>купил AAPL 10 по 150</code>, <code>купил BTC 0.5 по 45000</code></td></tr>
+          <tr><td>Портфель</td><td><code>портфель</code>, <code>мои инвестиции</code>, <code>portfolio</code></td></tr>
+          <tr><td>Цена</td><td><code>цена TSLA</code>, <code>сколько стоит BTC</code>, <code>курс ETH</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block module-bonus">
+        <h3>📧 Email — Черновики писем</h3>
+        <p><strong>Что делает:</strong> Генерация черновиков писем с ИИ (тема, тон, шаблон). Тон: формально / дружелюбно / неформально. Шаблоны: увольнение, жалоба, приглашение, благодарность, извинение, follow-up, знакомство.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сгенерировать</td><td><code>письмо босу про отпуск</code>, <code>email resignation letter</code>, <code>жалобное письмо в поддержку</code></td></tr>
+        </table>
+      </section>
+
+      <p class="doc-meta">Также в числе бонусных вариантов при онбординге: Подписки (sub), Книги (book), Новости (news).</p>
+
+      <!-- ========== PREMIUM ========== -->
+      <h2 id="premium">Модули Pro / Team (премиум)</h2>
+      <p>На тарифах Pro и Team доступны <strong>все модули</strong> и безлимит AI. Оплата — через <code>/premium</code> (Telegram Stars).</p>
+
+      <section class="module-block">
+        <h3>😴 Sleep — Сон</h3>
+        <p><strong>Что делает:</strong> Учёт сна и качества (оценка 1–10).</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Записать</td><td><code>спал с 23:00 до 7:00</code>, <code>сон 23:00–7:00 качество 8/10</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>💧 Water — Вода</h3>
+        <p><strong>Что делает:</strong> Учёт выпитой воды и цель на день (по умолчанию 2000 мл). Показывает прогресс за день.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>выпил 250</code>, <code>250 мл</code>, <code>стакан воды</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>🍽️ Food — Питание</h3>
+        <p><strong>Что делает:</strong> Учёт приёмов пищи и калорий. Тип приёма (завтрак/обед/ужин/перекус) по времени, калории — по числу в сообщении.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Записать</td><td><code>завтрак: овсянка</code>, <code>съел пиццу 800 калорий</code>, <code>обед борщ</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>🏋️ Workout — Тренировки</h3>
+        <p><strong>Что делает:</strong> Лог тренировок (тип и упражнения в свободной форме).</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Записать</td><td><code>тренировка: отжимания 30</code>, <code>спорт бег 5 км</code>, <code>зал сегодня</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📚 Vocab — Словарь</h3>
+        <p><strong>Что делает:</strong> Карточки слов для изучения языка. Язык берётся из настроек бота.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>слово apple — яблоко</code>, <code>vocab hello - привет</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📖 Book — Книги</h3>
+        <p><strong>Что делает:</strong> Список книг и прогресс чтения. Статусы: хочу прочитать, читаю, прочитал.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>В список</td><td><code>книга Война и мир — Толстой</code></td></tr>
+          <tr><td>Читаю</td><td><code>читаю Мастер и Маргарита</code></td></tr>
+          <tr><td>Прочитал</td><td><code>прочитал 1984</code>, <code>finished book Name</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📦 Sub — Подписки</h3>
+        <p><strong>Что делает:</strong> Учёт подписок и ежемесячных трат. Период — месяц или год; бот считает эквивалент в месяц.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>подписка Netflix 990 в месяц</code>, <code>Spotify 199 год</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>🎯 Savings — Накопления</h3>
+        <p><strong>Что делает:</strong> Цели накоплений (сумма цели, при желании дедлайн — в разработке).</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Цель</td><td><code>накопление на машину 500000</code>, <code>цель отпуск 100000</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📉 Debt — Долги</h3>
+        <p><strong>Что делает:</strong> Учёт долгов (кому и сколько). Отметка «погашено» — в разработке.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>долг Игорю 5000</code>, <code>одолжил Маше 3000</code></td></tr>
+          <tr><td>Список</td><td>покажет общую сумму долгов</td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📰 News — Статьи</h3>
+        <p><strong>Что делает:</strong> Сохранение статей и ссылок «прочитать потом». Отметка «прочитано» — в разработке.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сохранить</td><td><code>новость https://example.com/article</code>, <code>сохрани статью про AI</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>💡 Idea — Идеи</h3>
+        <p><strong>Что делает:</strong> Банк идей с тегами (<code>#</code>). Идеи можно помечать и архивировать (в разработке).</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сохранить</td><td><code>идея: создать бот для трекинга</code>, <code>идея #startup новый сервис</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>💬 Quote — Цитаты</h3>
+        <p><strong>Что делает:</strong> Сохранение цитат с автором. Автор указывается после <code>—</code> или <code>-</code>.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сохранить</td><td><code>Жизнь — то, что происходит... — Джон Леннон</code>, <code>цитата "текст" — Автор</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>✈️ Trip — Поездки</h3>
+        <p><strong>Что делает:</strong> Планирование поездок (направление, даты). Детали и статус — в разработке.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>поездка в Париж</code>, <code>trip Москва 15 марта</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📍 Place — Места</h3>
+        <p><strong>Что делает:</strong> Список мест (кафе, достопримечательности). Адрес, категория, оценка — в разработке.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сохранить</td><td><code>место Эрмитаж</code>, <code>place кофейня на углу</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>🛒 Buy — Список покупок</h3>
+        <p><strong>Что делает:</strong> Список того, что нужно купить. Отметка «куплено» — в разработке.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>купить молоко</code>, <code>в список хлеб сыр</code>, <code>buy eggs</code></td></tr>
+          <tr><td>Список</td><td>покажет активные пункты</td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📌 Read Later (@later)</h3>
+        <p><strong>Что делает:</strong> Закладки статей/видео с авто-метаданными (как Pocket). Отправьте ссылку — бот вытащит title/description. Можно теги: <code>#tutorial</code>.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Сохранить</td><td>Отправьте ссылку в чат</td></tr>
+          <tr><td>Список</td><td><code>покажи список</code>, <code>несмотренное</code>, <code>list</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📚 Courses — Курсы</h3>
+        <p><strong>Что делает:</strong> Прогресс по онлайн-курсам.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>курс React на Udemy</code>, <code>course English B2</code></td></tr>
+          <tr><td>Прогресс</td><td><code>урок 15</code>, <code>progress 20</code>, <code>lesson 5</code></td></tr>
+          <tr><td>Список</td><td><code>курсы</code>, <code>list courses</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>🐾 Pets — Питомцы</h3>
+        <p><strong>Что делает:</strong> Питомцы, прививки, визиты к вету. <strong>Авто:</strong> напоминания о прививках (ежедневно в 9:00 по вашему часовому поясу).</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>питомец Барсик кошка</code>, <code>pet Rex dog</code></td></tr>
+          <tr><td>Прививка</td><td><code>прививка бешенство</code>, <code>vaccination DHPP</code></td></tr>
+          <tr><td>Список</td><td><code>питомцы</code>, <code>list pets</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>📂 Projects — Проекты</h3>
+        <p><strong>Что делает:</strong> Проекты и этапы (milestones).</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Создать</td><td><code>проект Новый сайт</code>, <code>project Mobile app</code></td></tr>
+          <tr><td>Этап</td><td><code>этап Дизайн</code>, <code>milestone Beta release</code></td></tr>
+          <tr><td>Список</td><td><code>проекты</code>, <code>list projects</code></td></tr>
+        </table>
+      </section>
+
+      <section class="module-block">
+        <h3>🚗 Car — Машина</h3>
+        <p><strong>Что делает:</strong> Авто, сервис, заправки.</p>
+        <table class="examples-table">
+          <tr><th>Действие</th><th>Примеры</th></tr>
+          <tr><td>Добавить</td><td><code>машина Toyota Camry 2020</code>, <code>car BMW X5 2019</code></td></tr>
+          <tr><td>Заправка</td><td><code>заправка 40 л 2500 руб</code>, <code>fuel 50L 3000</code></td></tr>
+          <tr><td>Сервис</td><td><code>сервис замена масла</code>, <code>масло замена</code></td></tr>
+          <tr><td>Список</td><td><code>машины</code>, <code>list cars</code></td></tr>
+        </table>
+      </section>
+
+      <!-- ========== INTEGRATIONS ========== -->
+      <h2 id="integrations">Интеграции и сервисы</h2>
+      <p>BrainOS подключается к внешним сервисам и даёт доступ к ним из Telegram. Ниже — команды, уведомления и дополнительные возможности.</p>
+
+      <section class="module-block">
+        <h3>🔔 Уведомления (Notify)</h3>
+        <p><strong>Что делает:</strong> Умные уведомления с учётом вашего часового пояса (настраивается в /settings).</p>
+        <ul>
+          <li><strong>Дайджест</strong> — накопленные уведомления от модулей (задачи, кошелёк и т.д.) приходят одним сообщением в выбранное время (например 20:00 по вашему времени).</li>
+          <li><strong>Режим «Не беспокоить» (DND)</strong> — в заданный интервал (например 22:00–08:00) обычные уведомления не отправляются, а накапливаются в дайджесте; срочные (URGENT) доставляются сразу.</li>
+        </ul>
+        <p>Настройки дайджеста и DND задаются в боте (соответствующие пункты в настройках уведомлений).</p>
+      </section>
+
+      <section class="module-block">
+        <h3>Notion</h3>
+        <p><strong>Команда:</strong> <code>/notion</code> — подключить аккаунт (OAuth). После авторизации привяжите базы:</p>
+        <ul>
+          <li><code>/notion_link tasks &lt;id&gt;</code> — база для <strong>задач</strong> (id из URL базы в Notion)</li>
+          <li><code>/notion_link notes &lt;id&gt;</code> — база для <strong>заметок</strong></li>
+        </ul>
+        <p>Синхронизация идёт по расписанию (ежедневно), задачи и заметки синкаются в обе стороны.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>Gmail / Inbox</h3>
+        <p><strong>Команда:</strong> <code>/inbox</code> — письма из Gmail, триаж (срочно / важно / обычное / спам). Сначала нужно подключить Gmail (кнопка или ссылка в боте).</p>
+      </section>
+
+      <section class="module-block">
+        <h3>📅 Meeting — Встречи (Google Calendar)</h3>
+        <p><strong>Что делает:</strong> Напоминания о встречах. Бот за час до события присылает краткую повестку в Telegram. События подтягиваются из <strong>Google Calendar</strong> или создаются вручную.</p>
+        <p>Подключение календаря: откройте в браузере ссылку вида <code>https://ваш-домен/auth/calendar?userId=...</code> (userId выдаёт поддержка или можно посмотреть в БД/настройках) и авторизуйтесь в Google. После этого события синхронизируются автоматически.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>🔬 Research — Исследование</h3>
+        <p><strong>Команда:</strong> <code>/research</code>. Разбивка запроса на подвопросы, поиск по разным источникам, итоговый отчёт. Доступно на премиум-тарифах.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>🎤 Голосовые сообщения (Voice)</h3>
+        <p>Отправьте голосовое или видео-ноту — бот распознаёт речь (Whisper) и обрабатывает текст как обычное сообщение (задачи, заметки, поиск и т.д.). Модуль <strong>voice</strong> работает поверх выбранного вами модуля.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>📊 Дашборд и аналитика (Analytics)</h3>
+        <p>Веб-страница с графиками и сводками: финансы, задачи, привычки, здоровье и др. Вход через Telegram Login. URL и настройку даёт администратор. Модуль <strong>analytics</strong> формирует обзор по вашим данным.</p>
+      </section>
+
+      <section class="module-block">
+        <h3>💳 Тарифы и оплата (Premium / Team)</h3>
+        <p><strong>Команда:</strong> <code>/premium</code>. Тарифы Free / Pro / Team, оплата через Telegram Stars, отмена подписки, переход Pro→Team, допокупка мест для Team. Модули <strong>premium</strong> и <strong>team</strong> управляют доступом и подписками.</p>
+      </section>
+
+    </div>
+  </main>
+<!-- FOOTER -->
+  <style>
+    .module-block { margin: 1.5rem 0; padding: 0 0 1rem; border-bottom: 1px solid var(--gray-light); }
+    .module-block:last-of-type { border-bottom: 0; }
+    .module-bonus { background: linear-gradient(to right, rgba(5, 38, 89, 0.06), transparent); padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+    .examples-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 0.5rem 0; }
+    .examples-table th, .examples-table td { padding: 0.4rem 0.6rem; text-align: left; border: 1px solid var(--gray-light); }
+    .examples-table th { background: var(--navy-light); color: #fff; }
+    .examples-table code { font-size: 0.85em; }
+    code { background: var(--gray-light); padding: 0.1em 0.35em; border-radius: 4px; }
+    .toc { margin: 1rem 0 1.5rem; padding: 0.75rem 1rem; background: var(--gray-light); border-radius: 8px; font-size: 0.95rem; }
+    .toc a { color: var(--navy); }
+  </style>
+</body>
+</html>

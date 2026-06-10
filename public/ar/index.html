@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrainOS beta — مساعدك الشخصي AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+  
+<!-- HEADER -->
+
+
+  <main class="container">
+    <section class="hero">
+      <h1>BrainOS <span class="badge-beta">beta</span> — مساعدك الشخصي AI</h1>
+    </section>
+
+    <section class="intro">
+      <p>BrainOS هو مساعد ذكي على Telegram يساعدك على تنظيم العمل، وأتمتة المهام الروتينية، والتفاعل بكفاءة مع أدواتك.</p>
+    </section>
+
+    <div class="two-col-row">
+      <div class="col-text content-narrow">
+        <h2>لمن BrainOS؟</h2>
+        <ul>
+          <li>للمهنيين الذين يعملون مع عدد كبير من المهام ويحتاجون إلى وصول سريع للمعلومات؛</li>
+          <li>لمستخدمي Notion وGmail والخدمات الأخرى الذين يرغبون في إدارتها مباشرة من Telegram؛</li>
+          <li>لكل من يريد أتمتة العمليات المتكررة وتوفير الوقت؛</li>
+          <li>لمن يبحث عن مساعد ذكي قابل للتخصيص حسب احتياجاته.</li>
+        </ul>
+      </div>
+      <div class="col-cloud">
+        <h2>ماذا يستطيع BrainOS؟</h2>
+        <div class="tag-cloud" id="tagCloud" aria-label="سحابة الإمكانات"></div>
+      </div>
+    </div>
+
+    <section class="col-text content-narrow">
+      <h2>كيف تبدأ؟</h2>
+      <ol>
+        <li>افتح البوت في Telegram: <strong><a href="https://t.me/BrainOS_Bot" target="_blank" rel="noopener noreferrer" class="link-primary">@BrainOS_Bot</a></strong></li>
+        <li>اضغط <strong>/start</strong></li>
+        <li>اتبع تعليمات الإعداد</li>
+        <li>ابدأ العمل مع مساعدك الشخصي AI</li>
+      </ol>
+    </section>
+  </main>
+
+  
+<!-- FOOTER -->
+
+
+  <script>
+    (function() {
+      var words = [
+        'المهام', 'الملاحظات', 'التذكيرات', 'البحث', 'الإنشاء', 'الإدارة', 'التخطيط', 'الأتمتة', 'التوليد', 'الهيكلة',
+        'Notion', 'Gmail', 'التقويم', 'Google',
+        'المستندات', 'الملفات', 'الرسائل', 'النصوص', 'قواعد البيانات', 'الصفحات',
+        'الذكاء الاصطناعي', 'المساعد', 'التحليل', 'السياق', 'الإنترنت',
+        'سير العمل', 'الأوامر', 'التخصيص', 'التحرير', 'الإرسال', 'القراءة',
+        'Telegram', 'Premium', 'التكامل', 'المساعد', 'التنظيم'
+      ];
+      var container = document.getElementById('tagCloud');
+      if (!container) return;
+      var sizeClasses = ['size-0', 'size-1', 'size-2', 'size-3', 'size-4', 'size-5'];
+      function pickSize(word) {
+        var len = word.length;
+        if (len <= 4) return 4;
+        if (len <= 6) return 3;
+        if (len <= 10) return 2;
+        if (len <= 14) return 1;
+        return 0;
+      }
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        var size = Math.min(pickSize(w) + (i % 2), 5);
+        var span = document.createElement('span');
+        span.className = 'word ' + sizeClasses[size];
+        span.textContent = w;
+        span.setAttribute('role', 'listitem');
+        container.appendChild(span);
+      }
+    })();
+  </script>
+</body>
+</html>

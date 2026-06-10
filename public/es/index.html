@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrainOS beta — Tu asistente personal IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+  
+<!-- HEADER -->
+
+
+  <main class="container">
+    <section class="hero">
+      <h1>BrainOS <span class="badge-beta">beta</span> — Tu asistente personal IA</h1>
+    </section>
+
+    <section class="intro">
+      <p>BrainOS es un asistente <strong>inteligente</strong> en Telegram que te ayuda a organizar tu trabajo, automatizar tareas rutinarias e interactuar eficazmente con tus herramientas.</p>
+    </section>
+
+    <div class="two-col-row">
+      <div class="col-text content-narrow">
+        <h2>¿Para quién es BrainOS?</h2>
+        <ul>
+          <li>Profesionales que trabajan con múltiples tareas y necesitan acceso rápido a la información;</li>
+          <li>Usuarios de Notion, Gmail y otros servicios que desean gestionarlos directamente desde Telegram;</li>
+          <li>Cualquiera que quiera automatizar acciones repetitivas y ahorrar tiempo;</li>
+          <li>Personas que buscan un asistente inteligente adaptable a sus necesidades.</li>
+        </ul>
+      </div>
+      <div class="col-cloud">
+        <h2>¿Qué puede hacer BrainOS?</h2>
+        <div class="tag-cloud" id="tagCloud" aria-label="Nube de capacidades"></div>
+      </div>
+    </div>
+
+    <section class="col-text content-narrow">
+      <h2>¿Cómo empezar?</h2>
+      <ol>
+        <li>Abre el bot en Telegram: <strong><a href="https://t.me/BrainOS_Bot" target="_blank" rel="noopener noreferrer" class="link-primary">@BrainOS_Bot</a></strong></li>
+        <li>Pulsa <strong>/start</strong></li>
+        <li>Sigue las instrucciones de configuración</li>
+        <li>Empieza a trabajar con tu asistente personal IA</li>
+      </ol>
+    </section>
+  </main>
+
+  
+<!-- FOOTER -->
+
+
+  <script>
+    (function() {
+      var words = [
+        'Tareas', 'Notas', 'Recordatorios', 'Búsqueda', 'Creación', 'Gestión', 'Planificación', 'Automatización', 'Generación', 'Estructuración',
+        'Notion', 'Gmail', 'Calendario', 'Google',
+        'Documentos', 'Archivos', 'Correos', 'Textos', 'Bases de datos', 'Páginas',
+        'IA', 'Asistente', 'Análisis', 'Contexto', 'Internet',
+        'Flujos de trabajo', 'Comandos', 'Personalización', 'Edición', 'Envío', 'Lectura',
+        'Telegram', 'Premium', 'Integración', 'Asistente', 'Organización'
+      ];
+      var container = document.getElementById('tagCloud');
+      if (!container) return;
+      var sizeClasses = ['size-0', 'size-1', 'size-2', 'size-3', 'size-4', 'size-5'];
+      function pickSize(word) {
+        var len = word.length;
+        if (len <= 4) return 4;
+        if (len <= 6) return 3;
+        if (len <= 10) return 2;
+        if (len <= 14) return 1;
+        return 0;
+      }
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        var size = Math.min(pickSize(w) + (i % 2), 5);
+        var span = document.createElement('span');
+        span.className = 'word ' + sizeClasses[size];
+        span.textContent = w;
+        span.setAttribute('role', 'listitem');
+        container.appendChild(span);
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrainOS beta — Ваш персональный ИИ-ассистент</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+<!-- HEADER -->
+  <main class="container">
+    <section class="hero">
+      <h1>BrainOS <span class="badge-beta">beta</span> — Ваш персональный ИИ-ассистент</h1>
+    </section>
+
+    <section class="intro">
+      <p>BrainOS — это <strong>интеллектуальный</strong> помощник в Telegram, который помогает организовать работу, автоматизировать рутину и эффективно взаимодействовать с вашими инструментами.</p>
+    </section>
+
+    <div class="two-col-row">
+      <div class="col-text content-narrow">
+        <h2>Для кого BrainOS?</h2>
+        <ul>
+          <li>Для профессионалов, которые работают с множеством задач и нуждаются в быстром доступе к информации;</li>
+          <li>Для пользователей Notion, Gmail и других сервисов, кто хочет управлять ими прямо из Telegram;</li>
+          <li>Для всех, кто хочет автоматизировать повторяющиеся действия и сэкономить время;</li>
+          <li>Для тех, кто ищет умного помощника с возможностью настройки под свои нужды.</li>
+        </ul>
+      </div>
+      <div class="col-cloud">
+        <h2>Что умеет BrainOS?</h2>
+        <div class="tag-cloud" id="tagCloud" aria-label="Облако возможностей"></div>
+      </div>
+    </div>
+
+    <section class="col-text content-narrow">
+      <h2>Как начать?</h2>
+      <ol>
+        <li>Откройте бот в Telegram: <strong><a href="https://t.me/BrainOS_Bot" target="_blank" rel="noopener noreferrer" class="link-primary">@BrainOS_Bot</a></strong></li>
+        <li>Нажмите <strong>/start</strong></li>
+        <li>Следуйте инструкциям для настройки</li>
+        <li>Начните работу с вашим персональным ИИ-ассистентом</li>
+      </ol>
+      <p><a href="/instructions" class="link-primary">Инструкция BrainOS Bot</a></p>
+    </section>
+  </main>
+<!-- FOOTER -->
+  <script>
+    (function() {
+      var words = [
+        'Задачи', 'Заметки', 'Напоминания', 'Поиск', 'Создание', 'Управление', 'Планирование', 'Автоматизация', 'Генерация', 'Структурирование',
+        'Notion', 'Gmail', 'Календарь', 'Google',
+        'Документы', 'Файлы', 'Письма', 'Тексты', 'Базы данных', 'Страницы',
+        'ИИ', 'Ассистент', 'Анализ', 'Контекст', 'Интернет',
+        'Рабочие процессы', 'Команды', 'Персонализация', 'Редактирование', 'Отправка', 'Чтение',
+        'Telegram', 'Premium', 'Интеграция', 'Помощник', 'Организация'
+      ];
+      var container = document.getElementById('tagCloud');
+      if (!container) return;
+      var sizeClasses = ['size-0', 'size-1', 'size-2', 'size-3', 'size-4', 'size-5'];
+      function pickSize(word) {
+        var len = word.length;
+        if (len <= 4) return 4;
+        if (len <= 6) return 3;
+        if (len <= 10) return 2;
+        if (len <= 14) return 1;
+        return 0;
+      }
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        var size = Math.min(pickSize(w) + (i % 2), 5);
+        var span = document.createElement('span');
+        span.className = 'word ' + sizeClasses[size];
+        span.textContent = w;
+        span.setAttribute('role', 'listitem');
+        container.appendChild(span);
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrainOS beta — Your Personal AI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+  
+<!-- HEADER -->
+
+
+  <main class="container">
+    <section class="hero">
+      <h1>BrainOS <span class="badge-beta">beta</span> — Your Personal AI Assistant</h1>
+    </section>
+
+    <section class="intro">
+      <p>BrainOS is an <strong>intelligent</strong> Telegram assistant that helps you organize work, automate routine tasks, and interact efficiently with your tools.</p>
+    </section>
+
+    <div class="two-col-row">
+      <div class="col-text content-narrow">
+        <h2>Who is BrainOS for?</h2>
+        <ul>
+          <li>Professionals who handle many tasks and need fast access to information;</li>
+          <li>Users of Notion, Gmail, and other services who want to manage them directly from Telegram;</li>
+          <li>Anyone who wants to automate repetitive actions and save time;</li>
+          <li>Those looking for a smart assistant customizable to their needs.</li>
+        </ul>
+      </div>
+      <div class="col-cloud">
+        <h2>What can BrainOS do?</h2>
+        <div class="tag-cloud" id="tagCloud" aria-label="Capabilities cloud"></div>
+      </div>
+    </div>
+
+    <section class="col-text content-narrow">
+      <h2>How to get started?</h2>
+      <ol>
+        <li>Open the bot in Telegram: <strong><a href="https://t.me/BrainOS_Bot" target="_blank" rel="noopener noreferrer" class="link-primary">@BrainOS_Bot</a></strong></li>
+        <li>Press <strong>/start</strong></li>
+        <li>Follow the setup instructions</li>
+        <li>Start working with your personal AI assistant</li>
+      </ol>
+    </section>
+  </main>
+
+  
+<!-- FOOTER -->
+
+
+  <script>
+    (function() {
+      var words = [
+        'Tasks', 'Notes', 'Reminders', 'Search', 'Creation', 'Management', 'Planning', 'Automation', 'Generation', 'Structuring',
+        'Notion', 'Gmail', 'Calendar', 'Google',
+        'Documents', 'Files', 'Emails', 'Texts', 'Databases', 'Pages',
+        'AI', 'Assistant', 'Analysis', 'Context', 'Internet',
+        'Workflows', 'Commands', 'Personalization', 'Editing', 'Sending', 'Reading',
+        'Telegram', 'Premium', 'Integration', 'Assistant', 'Organization'
+      ];
+      var container = document.getElementById('tagCloud');
+      if (!container) return;
+      var sizeClasses = ['size-0', 'size-1', 'size-2', 'size-3', 'size-4', 'size-5'];
+      function pickSize(word) {
+        var len = word.length;
+        if (len <= 4) return 4;
+        if (len <= 6) return 3;
+        if (len <= 10) return 2;
+        if (len <= 14) return 1;
+        return 0;
+      }
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        var size = Math.min(pickSize(w) + (i % 2), 5);
+        var span = document.createElement('span');
+        span.className = 'word ' + sizeClasses[size];
+        span.textContent = w;
+        span.setAttribute('role', 'listitem');
+        container.appendChild(span);
+      }
+    })();
+  </script>
+</body>
+</html>

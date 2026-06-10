@@ -1,0 +1,96 @@
+services:
+
+  # ─── PostgreSQL для BrainOS ─────────────────────────────────────────────
+  brainos-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: brainos
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: brainos
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brainos -d brainos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - default
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  # ─── Redis ──────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - default
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+  # ─── BrainOS (бот + HTTP API) ────────────────────────────────────────────
+  brainos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      brainos-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      # Перезаписываем DATABASE_URL чтобы указывал на контейнер, не localhost
+      DATABASE_URL: postgresql://brainos:${DB_PASSWORD}@brainos-db:5432/brainos?schema=public
+      REDIS_URL: redis://redis:6379
+      WEBHOOK_PORT: "3333"
+      NODE_ENV: production
+    ports:
+      - "3333:3333"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - infra   # для NPM (reverse proxy)
+      - default # для brainos-db и redis
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ─── Dashboard (Next.js) ─────────────────────────────────────────────────
+  dashboard:
+    build:
+      context: ./apps/dashboard
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://brainos.ai-khan.uz
+        NEXT_PUBLIC_TELEGRAM_BOT_NAME: ${BOT_USERNAME}
+        NEXT_PUBLIC_ANALYTICS_API_KEY: ${ANALYTICS_API_KEY}
+    restart: unless-stopped
+    depends_on:
+      - brainos
+    ports:
+      - "3001:3001"
+    networks:
+      - infra   # для NPM
+      - default
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+networks:
+  infra:
+    external: true
